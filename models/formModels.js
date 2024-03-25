@@ -22,7 +22,7 @@ const updateForm = async (formId, updatedForm) => {
     );
     return updatedDoc;
   } catch (err) {
-    console.error('Error updating form:', err);
+    console.error('Error updating form in db models:', err);
     throw err;
   }
 };

@@ -55,8 +55,14 @@ router.put('/forms/:id', async (req, res) => {
       title: req.body.title,
       fields: req.body.fields,
     };
+
     const formId = req.params.id;
-    const updatedDoc = await updateForm(formId, updatedForm);
+    const updatedDoc = updateForm(formId, updatedForm)
+
+    if (!updatedDoc) {
+      return res.status(404).json({ error: 'Form not found' });
+    }
+
     res.json(updatedDoc);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update form' });
