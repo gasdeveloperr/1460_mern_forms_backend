@@ -4,7 +4,7 @@ const { Form, saveForm, updateForm } = require('../models/formModels');
 const router = express.Router();
 
 // Route to fetch all forms
-router.get('/forms/all', async (req, res) => {
+router.get('/all', async (req, res) => {
   try {
     const forms = await Form.find();
     res.json(forms);
@@ -15,7 +15,7 @@ router.get('/forms/all', async (req, res) => {
 });
 
 // Route to fetch a form by ID
-router.get('/forms/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const formId = req.params.id;
     const form = await Form.findById(formId);
@@ -31,25 +31,45 @@ router.get('/forms/:id', async (req, res) => {
   }
 });
 
-router.post('/forms', async (req, res) => {
-  const formData = req.body;
-
-  // Validate the form data
-  if (!formData.title || !formData.fields || !Array.isArray(formData.fields)) {
-    return res.status(400).json({ error: 'Invalid form data' });
-  }
-
+// Route to delete a form by ID
+router.delete('/:id', async (req, res) => {
   try {
-    // Save the form data to the database
-    const savedForm = await saveForm(formData);
-    res.status(200).json(savedForm);
-  } catch (error) {
-    console.error('Error saving form on backend:', error);
-    res.status(500).json({ error: 'An error occurred while saving the form', formData });
+    const formId = req.params.id;
+    
+    // Find the form by ID and remove it from the database
+    const deletedForm = await Form.findByIdAndDelete(formId);
+    
+    if (!deletedForm) {
+      return res.status(404).json({ error: 'Form not found' });
+    }
+    
+    res.json({ message: 'Form deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting form:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
-router.put('/forms/:id', async (req, res) => {
+router.post('/new', async (req, res) => {
+
+  try {
+    // Create a new form document
+    const newForm = new Form({
+      title: 'New form',
+      fields: [],
+    });
+
+    // Save the form to the database
+    const savedForm = await newForm.save();
+
+    res.status(200).json(savedForm);
+  } catch (error) {
+    console.error('Error saving form on backend:', error);
+    res.status(500).json({ error: 'An error occurred while saving the form' });
+  }
+});
+
+router.put('/:id', async (req, res) => {
   try {
     const updatedForm = {
       title: req.body.title,

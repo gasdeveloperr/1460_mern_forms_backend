@@ -1,5 +1,29 @@
 const mongoose = require('mongoose');
 
+const submissionSchema = new mongoose.Schema({
+  formId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Form',
+    required: true,
+  },
+  submittedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  data: {
+    type: Map,
+    of: String,
+  },
+});
+
+const SubmissionForm = mongoose.model('SubmissionForm', submissionSchema);
+
+const submitSubmsnForm = async (formData) => {
+  const subm_form = new SubmissionForm(formData);
+  const submitedForm = await subm_form.save();
+  return submitedForm;
+};
+
 const formSchema = new mongoose.Schema({
   title: String,
   fields: [],
@@ -28,6 +52,8 @@ const updateForm = async (formId, updatedForm) => {
 };
 
 module.exports = {
+  SubmissionForm,
+  submitSubmsnForm,
   Form,
   saveForm,
   updateForm

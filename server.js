@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const formRoutes = require('./routes/formRoutes');
+const submsnFormRoutes = require('./routes/submsnFormRoutes');
 const dotenv = require("dotenv")
 dotenv.config()
 
@@ -18,7 +19,8 @@ mongoose.connect(`mongodb+srv://gasdev486:${process.env.MONDODB_PASSWORD}@simmon
   .catch((err) => console.log('MongoDB connection error:', err));
 
 // Routes
-app.use('/api', formRoutes);
+app.use('/api/forms', formRoutes);
+app.use('/api/subm_forms', submsnFormRoutes);
 
 // Start the server
 app.listen(PORT, () => {
