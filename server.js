@@ -1,13 +1,19 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const authRoutes = require('./routes/authRoutes');
 const formRoutes = require('./routes/formRoutes');
 const submsnFormRoutes = require('./routes/submsnFormRoutes');
+
+const authMiddleware = require('./middlewares/authMiddleware');
+const roleMiddleware = require('./middlewares/roleMiddleware');
+
 const dotenv = require("dotenv")
 dotenv.config()
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const secretKey = process.env.JWT_SECRET;
 
 // Middleware
 app.use(express.json());
@@ -19,8 +25,9 @@ mongoose.connect(`mongodb+srv://gasdev486:${process.env.MONDODB_PASSWORD}@simmon
   .catch((err) => console.log('MongoDB connection error:', err));
 
 // Routes
-app.use('/api/forms', formRoutes);
-app.use('/api/subm_forms', submsnFormRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/forms', authMiddleware, formRoutes);
+app.use('/api/subm_forms', authMiddleware, submsnFormRoutes);
 
 // Start the server
 app.listen(PORT, () => {
