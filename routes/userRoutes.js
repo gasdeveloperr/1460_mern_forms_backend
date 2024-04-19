@@ -88,4 +88,62 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Reset password route
+router.post('/reset-password', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Generate a password reset token (you can use a library like jsonwebtoken)
+    const resetToken = generateResetToken(user._id);
+
+    // Save the reset token to the user's document in the database
+    user.resetToken = resetToken;
+    await user.save();
+
+    // Send the password reset email to the user's email address
+    await sendPasswordResetEmail(user.email, resetToken);
+
+    res.status(200).json({ message: 'Password reset email sent' });
+  } catch (err) {
+    console.error('Error resetting password:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Confirm password reset route
+router.post('/confirm-password-reset', async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  try {
+    // Find the user by the reset token
+    const user = await User.findOne({ resetToken: token });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired token' });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password and remove the reset token
+    user.password = hashedPassword;
+    user.resetToken = undefined;
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successful' });
+  } catch (err) {
+    console.error('Error confirming password reset:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
 module.exports = router;

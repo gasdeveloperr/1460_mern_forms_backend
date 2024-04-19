@@ -52,11 +52,14 @@ router.delete('/:id', async (req, res) => {
 
 router.post('/new', async (req, res) => {
 
+  const timeLog = new Date()
+  console.log('created new form : ', timeLog)
+
   try {
     // Create a new form document
     const newForm = new Form({
-      title: 'New form',
-      fields: [],
+      title: req.body.title,
+      fields: req.body.fields,
     });
 
     // Save the form to the database
