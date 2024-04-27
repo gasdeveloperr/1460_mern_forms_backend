@@ -5,6 +5,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const formRoutes = require('./routes/formRoutes');
 const submsnFormRoutes = require('./routes/submsnFormRoutes');
+const businessRoutes = require('./routes/businessRoutes');
 
 const authMiddleware = require('./middlewares/authMiddleware');
 const roleMiddleware = require('./middlewares/roleMiddleware');
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', authMiddleware, userRoutes);
 app.use('/api/forms', authMiddleware, formRoutes);
 app.use('/api/subm_forms', authMiddleware, submsnFormRoutes);
+app.use('/api/business', authMiddleware, businessRoutes);
 
 // Start the server
 app.listen(PORT, () => {

@@ -1,4 +1,3 @@
-// backend/models/userModel.js
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -11,14 +10,17 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  business:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Business'
+  },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user', 'admin', 'editor', 'contributor'],
     default: 'user',
   },
-  // Add more fields as needed
 });
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+module.exports = {User};

@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../models/userModels');
+const {User} = require('../models/userModels');
 
 // Registration route
 router.post('/register', async (req, res) => {
@@ -68,9 +68,10 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: '12h',
     });
+    const role = user.role;
 
     // Send the token as a response
-    res.json({ token });
+    res.json({ token, role });
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).json({ error: 'Internal server error' });
