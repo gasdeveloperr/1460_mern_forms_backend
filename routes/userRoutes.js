@@ -1,6 +1,14 @@
 const express = require('express');
 const { User, saveUser, updateUser } = require('../models/userModels');
+const { addNewUserToBusiness } = require('../models/businessModels');
 const router = express.Router();
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+
+function generateUniqueToken() {
+  const token = crypto.randomBytes(20).toString('hex');
+  return token;
+}
 
 // Route to fetch all users
 router.get('/all', async (req, res) => {
@@ -52,14 +60,18 @@ router.delete('/:id', async (req, res) => {
 router.post('/new', async (req, res) => {
 
   try {
-    // Create a new user document
     const newUser = new User({
-      title: 'New user',
-      fields: [],
+      email: req.body.email,
+      name: req.body.name,
+      role: req.body.role,
+      business: req.body.business,
+      password: req.body.password,
     });
 
-    // Save the user to the database
     const savedUser = await newUser.save();
+
+    const businessId = savedUser.business;
+    addNewUserToBusiness(businessId, savedUser._id)
 
     res.status(200).json(savedUser);
   } catch (error) {
@@ -85,6 +97,88 @@ router.put('/:id', async (req, res) => {
     res.json(updatedDoc);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
+router.post('/invite', async  (req, res) => {
+
+  const { email } = req.body;
+  
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Generate a unique activation token
+    const activationToken = generateUniqueToken();
+
+    // Update the user's invitationLink property
+    user.invitationLink = activationToken;
+    await user.save();
+
+    // Send the invitation email with the activation link
+    //await sendInvitationEmail(email, activationToken);
+
+    res.json(activationToken);
+  } catch (error) {
+    console.error('Error sending invitation:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+async function sendInvitationEmail(email, activationToken) {
+  // Create a transporter using SMTP
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    auth: {
+        user: 'sandra.prohaska77@ethereal.email',
+        pass: 'SPsxJg1dyMusnB7Xvr'
+    }
+  });
+
+  // Compose the email message
+  const message = {
+    from: 'felix.ferry@ethereal.email',
+    to: email,
+    subject: 'Invitation to Join Our App',
+    text: `Dear user,\n\nYou have been invited to join our app. Please click on the following link to activate your account:\n\nhttp://localhost:8000/activate/${activationToken}\n\nBest regards,\nYour App Team`,
+  };
+
+  // Send the email
+  await transporter.sendMail(message);
+}
+
+
+
+
+// Activation API endpoint
+router.post('/activate/:token', async(req, res) => {
+  const userActivateToken = req.params.token;
+
+  try {
+    // Find the user by invitationLink token
+    const user = await User.findOne({ invitationLink: userActivateToken });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid activation token' });
+    }
+
+    // Check if the user is already activated
+    if (user.invitationLink === 'activated') {
+      return res.status(400).json({ message: 'User already activated' });
+    }
+
+    // Update the user's invitationLink to 'activated'
+    user.invitationLink = 'activated';
+    await user.save();
+
+    res.status(200).json({ message: 'Account activated successfully' });
+  } catch (error) {
+    console.error('Error activating account:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 

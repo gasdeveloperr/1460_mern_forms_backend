@@ -6,9 +6,12 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  name: {
+    type: String,
+  },
   password: {
     type: String,
-    required: true,
+    //required: true,
   },
   business:{
     type: mongoose.Schema.Types.ObjectId,
@@ -18,6 +21,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'admin', 'editor', 'contributor'],
     default: 'user',
+  },
+  invitationLink: {
+    type: String,
+    //required: true,
   },
 });
 

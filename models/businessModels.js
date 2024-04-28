@@ -46,16 +46,15 @@ const saveBusiness = async (businessData) => {
   return savedBusiness;
 };
 
-const updateBusiness = async (businessId, updatedBusiness) => {
+const addNewUserToBusiness = async (businessId, newUser) => {
   try {
-    const updatedDoc = await Business.findByIdAndUpdate(
+    await Business.findByIdAndUpdate(
       businessId,
-      { title: updatedBusiness.title, fields: updatedBusiness.fields },
+      { $push: { users: newUser } },
       { new: true }
     );
-    return updatedDoc;
   } catch (err) {
-    console.error('Error updating business in db models:', err);
+    console.error('Error adding new user to business:', err);
     throw err;
   }
 };
@@ -64,5 +63,5 @@ const updateBusiness = async (businessId, updatedBusiness) => {
 module.exports = {
   Business,
   saveBusiness,
-  updateBusiness
+  addNewUserToBusiness
 };

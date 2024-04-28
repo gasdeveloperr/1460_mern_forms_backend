@@ -75,12 +75,11 @@ router.post('/new', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const updatedBusiness = {
-      title: req.body.title,
-      fields: req.body.fields,
+      users: req.body.users,
     };
 
     const businessId = req.params.id;
-    const updatedDoc = updateBusiness(businessId, updatedBusiness)
+    const updatedDoc = addNewUserToBusiness(businessId, updatedBusiness)
 
     if (!updatedDoc) {
       return res.status(404).json({ error: 'Business not found' });
