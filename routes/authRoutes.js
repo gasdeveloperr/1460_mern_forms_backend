@@ -69,9 +69,10 @@ router.post('/login', async (req, res) => {
       expiresIn: '12h',
     });
     const role = user.role;
+    const id = user._id;
 
     // Send the token as a response
-    res.json({ token, role });
+    res.json({ token, role, id });
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).json({ error: 'Internal server error' });

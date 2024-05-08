@@ -1,8 +1,9 @@
 const express = require('express');
-const { User, saveUser, updateUser } = require('../models/userModels');
-const { addNewUserToBusiness } = require('../models/businessModels');
+const { User, saveUser} = require('../models/userModels');
+const { addNewUserToBusiness, Business } = require('../models/businessModels');
 const router = express.Router();
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 
 function generateUniqueToken() {
@@ -49,6 +50,10 @@ router.delete('/:id', async (req, res) => {
     if (!deletedUser) {
       return res.status(404).json({ error: 'User not found' });
     }
+    await Business.updateMany(
+      { users: userId },
+      { $pull: { users: userId } }
+    );
     
     res.json({ message: 'User deleted successfully' });
   } catch (err) {
@@ -80,21 +85,45 @@ router.post('/new', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.post('/change-name', async (req, res) => {
   try {
-    const updatedUser = {
-      title: req.body.title,
-      fields: req.body.fields,
-    };
+    const userId= req.body.id;
+    const newName= req.body.name;
 
-    const userId = req.params.id;
-    const updatedDoc = updateUser(userId, updatedUser)
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { name: newName },
+      { new: true }
+    );
 
-    if (!updatedDoc) {
+    if (!updatedUser) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json(updatedDoc);
+    res.status(200).json(updatedUser);
+    //.json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
+router.post('/change-password', async (req, res) => {
+  try {
+    const userId= req.body.id;
+    const newPassword= await bcrypt.hash(req.body.password, 10);;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { password: newPassword },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json(updatedUser);
+    //.json(updatedUser);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update user' });
   }
@@ -127,32 +156,6 @@ router.post('/invite', async  (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
-
-async function sendInvitationEmail(email, activationToken) {
-  // Create a transporter using SMTP
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
-    auth: {
-        user: 'sandra.prohaska77@ethereal.email',
-        pass: 'SPsxJg1dyMusnB7Xvr'
-    }
-  });
-
-  // Compose the email message
-  const message = {
-    from: 'felix.ferry@ethereal.email',
-    to: email,
-    subject: 'Invitation to Join Our App',
-    text: `Dear user,\n\nYou have been invited to join our app. Please click on the following link to activate your account:\n\nhttp://localhost:8000/activate/${activationToken}\n\nBest regards,\nYour App Team`,
-  };
-
-  // Send the email
-  await transporter.sendMail(message);
-}
-
-
-
 
 // Activation API endpoint
 router.post('/activate/:token', async(req, res) => {

@@ -1,6 +1,7 @@
 // server.js or businessRoutes.js
 const express = require('express');
 const { Business, saveBusiness, updateBusiness } = require('../models/businessModels');
+const { User } = require('../models/userModels');
 const router = express.Router();
 
 // Route to fetch all businesss
@@ -35,14 +36,20 @@ router.get('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const businessId = req.params.id;
-    
+
     // Find the business by ID and remove it from the database
     const deletedBusiness = await Business.findByIdAndDelete(businessId);
-    
+
     if (!deletedBusiness) {
       return res.status(404).json({ error: 'Business not found' });
     }
-    
+
+    // Remove the business reference from associated users
+    await User.updateMany(
+      { business: businessId },
+      { $unset: { business: '' } }
+    );
+
     res.json({ message: 'Business deleted successfully' });
   } catch (err) {
     console.error('Error deleting business:', err);
