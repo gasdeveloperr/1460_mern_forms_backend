@@ -1,6 +1,6 @@
 // server.js or formRoutes.js
 const express = require('express');
-const { SubmissionForm, submitSubmsnForm } = require('../models/formModels');
+const { SubmissionForm} = require('../models/formModels');
 const router = express.Router();
 
 // Route to fetch all forms
@@ -33,21 +33,16 @@ router.get('/:id', async (req, res) => {
 
 router.post('/:id', async (req, res) => {
   try {
-    const submited_form = {
-      title: req.body.title,
-      fields: req.body.fields,
-    };
+    const newSubForm = new SubmissionForm({
+      formId: req.params.id,
+      data: req.body.formData,
+    });
 
-    const formId = req.params.id;
-    const updatedDoc = submitSubmsnForm(formId, submited_form)
+    const savedForm = await newSubForm.save();
 
-    if (!updatedDoc) {
-      return res.status(404).json({ error: 'Form not found' });
-    }
-
-    res.json(updatedDoc);
+    res.status(200).json(savedForm);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update form' });
+    res.status(500).json({ error: 'Failed to submit form' });
   }
 });
 
