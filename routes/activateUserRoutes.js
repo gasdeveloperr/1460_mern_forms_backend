@@ -17,7 +17,7 @@ router.get('/:token', async(req, res) => {
     }
 
     // Check if the user is already activated
-    if (user.invitationLink === 'activated') {
+    if (user.status === 'activated') {
       res.status(200).json({ message: 'User already activated' });
     } else{
       return res.status(400).json({ message: 'Account is not active yet' });
@@ -43,12 +43,12 @@ router.post('/:token', async(req, res) => {
     }
 
     // Check if the user is already activated
-    if (user.invitationLink === 'activated') {
+    if (user.status === 'activated') {
       return res.status(400).json({ message: 'User already activated' });
     } 
 
     user.password = newPassword;
-    user.invitationLink = 'activated';
+    user.status = 'activated';
     await user.save();
 
     res.status(200).json({ message: 'Account activated successfully' });

@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin', 'editor', 'contributor'],
     default: 'user',
   },
+  status: {
+    type: String,
+    //required: true,
+  },
   invitationLink: {
     type: String,
     //required: true,

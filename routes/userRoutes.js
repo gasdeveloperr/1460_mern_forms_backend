@@ -1,5 +1,5 @@
 const express = require('express');
-const { User, saveUser} = require('../models/userModels');
+const { User} = require('../models/userModels');
 const { addNewUserToBusiness, Business } = require('../models/businessModels');
 const router = express.Router();
 const crypto = require('crypto');
@@ -71,6 +71,7 @@ router.post('/new', async (req, res) => {
       role: req.body.role,
       business: req.body.business,
       password: req.body.password,
+      status: 'inactive'
     });
 
     const savedUser = await newUser.save();
